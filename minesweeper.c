@@ -4,6 +4,9 @@
 #include <stdbool.h>
 #include <time.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <signal.h>
 
 void NewGame();
 void PlaceBombs();
@@ -30,6 +33,8 @@ struct Tile grid[10][10];
 int gridRows = 10;
 int gridCols = 10;
 int numberOfBombs;
+pid_t pid;
+int seconds;
 
 void NewGame()
 {
@@ -40,9 +45,38 @@ void NewGame()
 
 }
 
+void ouch(int sig)
+{
+	exit(0);
+}
+
 void StartTimer()
 {
+	pid = fork();
+	struct sigaction act;
 
+	switch(pid)
+	{
+		case -1:
+			perror("fork failed");
+			exit(1);
+		case 0:
+			// Child process
+			act.sa_handler = ouch;
+			sigemptyset(&act.sa_mask);
+			act.sa_flags = 0;
+
+			sigaction(SIGTERM, &act, 0);
+
+			while (1)
+			{
+				seconds++;
+				printf("%d", seconds);
+				sleep(1);
+			}
+
+			break;
+	}
 }
 
 int main(int argc, char *argv[]) {
@@ -57,31 +91,44 @@ int main(int argc, char *argv[]) {
 		Usage();
 	}
 
-	switch(argv[1][1])
-	{
-		case 'e':
-			numberOfBombs = 5;
-			StartTimer();
-			NewGame();
-			break;
+	seconds = 0;
 
-		case 'n':
-			numberOfBombs = 15;
-			StartTimer();
-			NewGame();
-			break;
+//	switch(argv[1][1])
+//	{
+//		case 'e':
+//			numberOfBombs = 5;
+//			StartTimer();
+//			NewGame();
+//			break;
+//
+//		case 'n':
+//			numberOfBombs = 15;
+//			StartTimer();
+//			NewGame();
+//			break;
+//
+//		case 'h':
+//			numberOfBombs = 25;
+//			StartTimer();
+//			NewGame();
+//			break;
+//
+//		case 's':
+//			ViewScores();
+//			exit(0);
+//			break;
+//
+//		default:
+//			Usage();
+//	}
 
-		case 'h':
-			numberOfBombs = 25;
-			StartTimer();
-			NewGame();
-			break;
+	StartTimer();
 
-		case 's':
-			ViewScores();
-			exit(0);
-			break;
-	}
+	sleep(5);
+
+	kill(pid, SIGTERM);
+
+	waitpid(pid, (int*) 0, 0);
 
 	//NewGame();
 

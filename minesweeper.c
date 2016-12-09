@@ -15,6 +15,7 @@ void FloodFillRecurse(int i, int j);
 void PrintWholeGrid();
 void Usage();
 void ViewScores();
+void Click(int i, int j);
 
 struct Tile {
 	bool isMine;
@@ -64,7 +65,7 @@ int main(int argc, char *argv[]) {
 			break;
 	}
 
-	NewGame();
+	//NewGame();
 
 	int clickRow = 0;
 	int clickCol = 0;
@@ -76,12 +77,17 @@ int main(int argc, char *argv[]) {
 		scanf("%d", &clickRow);
 		scanf("%d", &clickCol);
 
-		FloodFill(clickRow, clickCol);
+		Click(clickRow, clickCol);
 
 		PrintGrid();
 	}
 
 	exit(0);
+}
+
+void Click(int i, int j)
+{
+	FloodFill(i, j);
 }
 
 void ViewScores()

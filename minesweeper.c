@@ -14,6 +14,7 @@ void FloodFill(int i, int j);
 void FloodFillRecurse(int i, int j);
 void PrintWholeGrid();
 void Usage();
+void ViewScores();
 
 struct Tile {
 	bool isMine;
@@ -27,17 +28,6 @@ struct Tile grid[10][10];
 int gridRows = 10;
 int gridCols = 10;
 int numberOfBombs = 10;
-
-void Usage()
-{
-	printf("Usage: minesweeper\n");
-	printf("\t   -e (Easy)\n");
-	printf("\t   -n (Normal)\n");
-	printf("\t   -h (Hard)\n");
-	printf("\t   -s (View High Scores)\n");
-
-	exit(1);
-}
 
 int main(int argc, char *argv[]) {
 
@@ -66,7 +56,8 @@ int main(int argc, char *argv[]) {
 			break;
 
 		case 's':
-			printf("View high scores");
+			ViewScores();
+			exit(0);
 			break;
 	}
 
@@ -88,6 +79,17 @@ int main(int argc, char *argv[]) {
 	}
 
 	exit(0);
+}
+
+void Usage()
+{
+	printf("Usage: minesweeper\n");
+	printf("\t   -e (Easy)\n");
+	printf("\t   -n (Normal)\n");
+	printf("\t   -h (Hard)\n");
+	printf("\t   -s (View High Scores)\n");
+
+	exit(1);
 }
 
 void FloodFillRecurse(int i, int j)

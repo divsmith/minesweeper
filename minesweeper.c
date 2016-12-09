@@ -168,23 +168,6 @@ int main(int argc, char *argv[]) {
 		exit(EXIT_FAILURE);
 	}
 
-	//NewGame();
-
-//	int clickRow = 0;
-//	int clickCol = 0;
-//
-//	PrintWholeGrid();
-//
-//	while (true)
-//	{
-//		scanf("%d", &clickRow);
-//		scanf("%d", &clickCol);
-//
-//		Click(clickRow, clickCol);
-//
-//		PrintGrid();
-//	}
-
 	exit(0);
 }
 

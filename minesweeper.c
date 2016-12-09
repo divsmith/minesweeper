@@ -21,7 +21,7 @@ struct Tile {
 struct Tile grid[10][10];
 int gridRows = 10;
 int gridCols = 10;
-int numberOfBombs = 5;
+int numberOfBombs = 30;
 
 int main() {
 
@@ -53,20 +53,91 @@ void NewGame()
 	PrintGrid();
 
 	CalculateAdjacentBombs();
+
+	printf("\n");
+
+	PrintGrid();
 }
 
-//void CalculateAdjacentBombs()
-//{
-//	for (int i = 0; i < gridRows; i++)
-//	{
-//		for (int j = 0; j < gridCols; j++)
-//		{
-//			int adjacentMines = 0;
-//
-//			if ()
-//		}
-//	}
-//}
+void CalculateAdjacentBombs()
+{
+	for (int i = 0; i < gridRows; i++)
+	{
+		for (int j = 0; j < gridCols; j++)
+		{
+			if (!grid[i][j].isMine)
+			{
+				int adjacentMines = 0;
+
+				if (!i == 0)
+				{
+					if (grid[i - 1][j].isMine)
+					{
+						adjacentMines++;
+					}
+				}
+
+				if (!(i == gridRows - 1))
+				{
+					if (grid[i + 1][j].isMine)
+					{
+						adjacentMines++;
+					}
+				}
+
+				if (!j == 0)
+				{
+					if (grid[i][j - 1].isMine)
+					{
+						adjacentMines++;
+					}
+				}
+
+				if (!(j == gridCols - 1))
+				{
+					if (grid[i][j + 1].isMine)
+					{
+						adjacentMines++;
+					}
+				}
+
+				if (i < (gridRows - 1) && j < (gridCols - 1))
+				{
+					if (grid[i + 1][j + 1].isMine)
+					{
+						adjacentMines++;
+					}
+				}
+
+				if (i < (gridRows - 1) && j > 0)
+				{
+					if (grid[i + 1][j - 1].isMine)
+					{
+						adjacentMines++;
+					}
+				}
+
+				if (i > 0 && j < (gridCols - 1))
+				{
+					if (grid[i - 1][j + 1].isMine)
+					{
+						adjacentMines++;
+					}
+				}
+
+				if (i > 0 && j > 0)
+				{
+					if (grid[i - 1][j - 1].isMine)
+					{
+						adjacentMines++;
+					}
+				}
+
+				grid[i][j].adjacentMines = adjacentMines;
+			}
+		}
+	}
+}
 
 void PrintGrid()
 {

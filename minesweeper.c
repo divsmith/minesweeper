@@ -81,6 +81,11 @@ int main(int argc, char *argv[]) {
 	exit(0);
 }
 
+void ViewScores()
+{
+	printf("View high scores here\n");
+}
+
 void Usage()
 {
 	printf("Usage: minesweeper\n");

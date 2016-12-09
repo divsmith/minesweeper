@@ -30,6 +30,15 @@ int gridRows = 10;
 int gridCols = 10;
 int numberOfBombs;
 
+void NewGame()
+{
+	InitializeGrid();
+	PlaceBombs();
+	CalculateAdjacentBombs();
+
+	
+}
+
 int main(int argc, char *argv[]) {
 
 	if (argc > 2 || argc == 1)
@@ -67,20 +76,20 @@ int main(int argc, char *argv[]) {
 
 	//NewGame();
 
-	int clickRow = 0;
-	int clickCol = 0;
-
-	PrintWholeGrid();
-
-	while (true)
-	{
-		scanf("%d", &clickRow);
-		scanf("%d", &clickCol);
-
-		Click(clickRow, clickCol);
-
-		PrintGrid();
-	}
+//	int clickRow = 0;
+//	int clickCol = 0;
+//
+//	PrintWholeGrid();
+//
+//	while (true)
+//	{
+//		scanf("%d", &clickRow);
+//		scanf("%d", &clickCol);
+//
+//		Click(clickRow, clickCol);
+//
+//		PrintGrid();
+//	}
 
 	exit(0);
 }
@@ -168,13 +177,6 @@ void FloodFill(int i, int j)
 			}
 		}
 	}
-}
-
-void NewGame()
-{
-	InitializeGrid();
-	PlaceBombs();
-	CalculateAdjacentBombs();
 }
 
 void CalculateAdjacentBombs()

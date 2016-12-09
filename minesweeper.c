@@ -44,12 +44,16 @@ struct sigaction act;
 char writeBuffer[] = "second";
 char readBuffer[6];
 void *thread_result;
+bool timerStarted = false;
 
 void NewGame()
 {
 	InitializeGrid();
 	PlaceBombs();
 	CalculateAdjacentBombs();
+
+	// Add mutex
+	seconds = 0;
 }
 
 void *thread_function(void *arg)
@@ -57,8 +61,9 @@ void *thread_function(void *arg)
 	while (read(pipes[0], readBuffer, sizeof(readBuffer)) > 0)
 	{
 		read(pipes[0], readBuffer, sizeof(readBuffer));
+		// Add mutex
 		seconds++;
-		printf("%d\n", seconds);
+		//printf("%d\n", seconds);
 		memset(readBuffer, '\0', sizeof(readBuffer));
 	}
 
@@ -73,42 +78,51 @@ void ouch(int sig)
 
 void StartTimer()
 {
-	if (pipe(pipes) == 0)
-    {
-    	pid = fork();
-
-		switch(pid)
+	if (!timerStarted)
+	{
+		if (pipe(pipes) == 0)
 		{
-			case -1:
-				perror("fork failed");
-				exit(1);
-			case 0:
-				// Child process
-				act.sa_handler = ouch;
-				sigemptyset(&act.sa_mask);
-				act.sa_flags = 0;
+			pid = fork();
 
-				sigaction(SIGTERM, &act, 0);
+			switch(pid)
+			{
+				case -1:
+					perror("fork failed");
+					exit(1);
+				case 0:
+					// Child process
+					act.sa_handler = ouch;
+					sigemptyset(&act.sa_mask);
+					act.sa_flags = 0;
 
-				while (1)
-				{
-					write(pipes[1], writeBuffer, sizeof(writeBuffer));
-					sleep(1);
-				}
+					sigaction(SIGTERM, &act, 0);
 
-				break;
+					while (1)
+					{
+						write(pipes[1], writeBuffer, sizeof(writeBuffer));
+						sleep(1);
+					}
 
-			default:
-				close(pipes[1]);
-				res = pthread_create(&a_thread, NULL, thread_function, NULL);
-				if (res != 0)
-				{
-					perror("thread creation failed");
-					exit(EXIT_FAILURE);
-				}
-				break;
+					break;
+
+				default:
+					close(pipes[1]);
+					res = pthread_create(&a_thread, NULL, thread_function, NULL);
+					if (res != 0)
+					{
+						perror("thread creation failed");
+						exit(EXIT_FAILURE);
+					}
+					break;
+			}
 		}
-    }
+		else
+		{
+			exit(EXIT_FAILURE);
+		}
+
+		timerStarted = true;
+	}
 }
 
 int main(int argc, char *argv[]) {
@@ -125,38 +139,35 @@ int main(int argc, char *argv[]) {
 
 	seconds = 0;
 
-//	switch(argv[1][1])
-//	{
-//		case 'e':
-//			numberOfBombs = 5;
-//			StartTimer();
-//			NewGame();
-//			break;
-//
-//		case 'n':
-//			numberOfBombs = 15;
-//			StartTimer();
-//			NewGame();
-//			break;
-//
-//		case 'h':
-//			numberOfBombs = 25;
-//			StartTimer();
-//			NewGame();
-//			break;
-//
-//		case 's':
-//			ViewScores();
-//			exit(0);
-//			break;
-//
-//		default:
-//			Usage();
-//	}
+	switch(argv[1][1])
+	{
+		case 'e':
+			numberOfBombs = 5;
+			break;
+
+		case 'n':
+			numberOfBombs = 15;
+			break;
+
+		case 'h':
+			numberOfBombs = 25;
+			break;
+
+		case 's':
+			ViewScores();
+			exit(0);
+			break;
+
+		default:
+			Usage();
+	}
 
 	StartTimer();
 
-	sleep(5);
+	NewGame();
+
+	// Play game here
+
 
 	kill(pid, SIGTERM);
 

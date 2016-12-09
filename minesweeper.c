@@ -27,7 +27,7 @@ struct Tile {
 struct Tile grid[10][10];
 int gridRows = 10;
 int gridCols = 10;
-int numberOfBombs = 10;
+int numberOfBombs;
 
 int main(int argc, char *argv[]) {
 
@@ -44,15 +44,18 @@ int main(int argc, char *argv[]) {
 	switch(argv[1][1])
 	{
 		case 'e':
-			printf("Play easy game");
+			numberOfBombs = 5;
+			NewGame();
 			break;
 
 		case 'n':
-			printf("Play normal game");
+			numberOfBombs = 15;
+			NewGame();
 			break;
 
 		case 'h':
-			printf("Play hard game");
+			numberOfBombs = 25;
+			NewGame();
 			break;
 
 		case 's':
@@ -165,7 +168,6 @@ void NewGame()
 {
 	InitializeGrid();
 	PlaceBombs();
-
 	CalculateAdjacentBombs();
 }
 

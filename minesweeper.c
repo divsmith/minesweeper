@@ -16,6 +16,7 @@ void PrintWholeGrid();
 void Usage();
 void ViewScores();
 void Click(int i, int j);
+void StartTimer();
 
 struct Tile {
 	bool isMine;
@@ -36,7 +37,12 @@ void NewGame()
 	PlaceBombs();
 	CalculateAdjacentBombs();
 
-	
+
+}
+
+void StartTimer()
+{
+
 }
 
 int main(int argc, char *argv[]) {
@@ -55,16 +61,19 @@ int main(int argc, char *argv[]) {
 	{
 		case 'e':
 			numberOfBombs = 5;
+			StartTimer();
 			NewGame();
 			break;
 
 		case 'n':
 			numberOfBombs = 15;
+			StartTimer();
 			NewGame();
 			break;
 
 		case 'h':
 			numberOfBombs = 25;
+			StartTimer();
 			NewGame();
 			break;
 

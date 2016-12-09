@@ -9,6 +9,9 @@ void PlaceBombs();
 void InitializeGrid();
 void PrintGrid();
 void CalculateAdjacentBombs();
+void FloodFill(int i, int j);
+void FloodFillRecurse(int i, int j);
+void PrintWholeGrid();
 
 struct Tile {
 	bool isMine;
@@ -21,11 +24,26 @@ struct Tile {
 struct Tile grid[10][10];
 int gridRows = 10;
 int gridCols = 10;
-int numberOfBombs = 30;
+int numberOfBombs = 10;
 
 int main() {
 
 	NewGame();
+
+	int clickRow = 0;
+	int clickCol = 0;
+
+	PrintWholeGrid();
+
+	while (true)
+	{
+		scanf("%d", &clickRow);
+		scanf("%d", &clickCol);
+
+		FloodFill(clickRow, clickCol);
+
+		PrintGrid();
+	}
 //	grid[0][0].adjacentMines = 4;
 //	grid[1][2].isMine = false;
 //	grid[1][3].isMine = false;
@@ -45,18 +63,76 @@ int main() {
 	exit(0);
 }
 
+void FloodFillRecurse(int i, int j)
+{
+	if (!grid[i][j].isMine && !grid[i][j].isFloodFillMarked)
+	{
+		grid[i][j].isFloodFillMarked = true;
+
+		if (grid[i][j].adjacentMines == 0)
+		{
+			FloodFill(i, j);
+		}
+	}
+}
+
+void FloodFill(int i, int j)
+{
+	if (i < gridRows && j < gridCols)
+	{
+		grid[i][j].isFloodFillMarked = true;
+
+		if (grid[i][j].adjacentMines == 0)
+		{
+			if (!i == 0)
+			{
+				FloodFillRecurse(i - 1, j);
+			}
+
+			if (!(i == gridRows - 1))
+			{
+				FloodFillRecurse(i + 1, j);
+			}
+
+			if (!j == 0)
+			{
+				FloodFillRecurse(i, j - 1);
+			}
+
+			if (!(j == gridCols - 1))
+			{
+				FloodFillRecurse(i, j + 1);
+			}
+
+			if (i < (gridRows - 1) && j < (gridCols - 1))
+			{
+				FloodFillRecurse(i + 1, j + 1);
+			}
+
+			if (i < (gridRows - 1) && j > 0)
+			{
+				FloodFillRecurse(i + 1, j - 1);
+			}
+
+			if (i > 0 && j < (gridCols - 1))
+			{
+				FloodFillRecurse(i - 1, j + 1);
+			}
+
+			if (i > 0 && j > 0)
+			{
+				FloodFillRecurse(i - 1, j - 1);
+			}
+		}
+	}
+}
+
 void NewGame()
 {
 	InitializeGrid();
 	PlaceBombs();
 
-	PrintGrid();
-
 	CalculateAdjacentBombs();
-
-	printf("\n");
-
-	PrintGrid();
 }
 
 void CalculateAdjacentBombs()
@@ -140,6 +216,34 @@ void CalculateAdjacentBombs()
 }
 
 void PrintGrid()
+{
+	for (int i = 0; i < gridRows; i++)
+	{
+		for (int j = 0; j < gridCols; j++)
+		{
+			if (grid[i][j].isFloodFillMarked)
+			{
+				if (grid[i][j].isMine)
+				{
+					printf("%s", "X");
+				}
+				else
+				{
+					printf("%d", grid[i][j].adjacentMines);
+				}
+			}
+			else
+			{
+				printf("-");
+			}
+
+			printf(" ");
+		}
+		printf("\n");
+	}
+}
+
+void PrintWholeGrid()
 {
 	for (int i = 0; i < gridRows; i++)
 	{

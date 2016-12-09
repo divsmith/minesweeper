@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <time.h>
+#include <string.h>
 
 void NewGame();
 void PlaceBombs();
@@ -12,6 +13,7 @@ void CalculateAdjacentBombs();
 void FloodFill(int i, int j);
 void FloodFillRecurse(int i, int j);
 void PrintWholeGrid();
+void Usage();
 
 struct Tile {
 	bool isMine;
@@ -26,7 +28,47 @@ int gridRows = 10;
 int gridCols = 10;
 int numberOfBombs = 10;
 
-int main() {
+void Usage()
+{
+	printf("Usage: minesweeper\n");
+	printf("\t   -e (Easy)\n");
+	printf("\t   -n (Normal)\n");
+	printf("\t   -h (Hard)\n");
+	printf("\t   -s (View High Scores)\n");
+
+	exit(1);
+}
+
+int main(int argc, char *argv[]) {
+
+	if (argc > 2 || argc == 1)
+	{
+		Usage();
+	}
+
+	if (strlen(argv[1]) != 2 || argv[1][0] != '-')
+	{
+		Usage();
+	}
+
+	switch(argv[1][1])
+	{
+		case 'e':
+			printf("Play easy game");
+			break;
+
+		case 'n':
+			printf("Play normal game");
+			break;
+
+		case 'h':
+			printf("Play hard game");
+			break;
+
+		case 's':
+			printf("View high scores");
+			break;
+	}
 
 	NewGame();
 
@@ -44,7 +86,7 @@ int main() {
 
 		PrintGrid();
 	}
-	
+
 	exit(0);
 }
 

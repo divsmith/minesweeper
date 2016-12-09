@@ -319,7 +319,7 @@ void PlaceBombs()
 
 		if (grid[bombRow][bombCol].isMine)
 		{
-			i++;
+			i--;
 		}
 		else
 		{

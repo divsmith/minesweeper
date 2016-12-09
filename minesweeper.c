@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <pthread.h>
 
 void NewGame();
 void PlaceBombs();
@@ -20,6 +21,7 @@ void Usage();
 void ViewScores();
 void Click(int i, int j);
 void StartTimer();
+void *thread_function (void *args);
 
 struct Tile {
 	bool isMine;
@@ -35,48 +37,78 @@ int gridCols = 10;
 int numberOfBombs;
 pid_t pid;
 int seconds;
+pthread_t a_thread;
+int res;
+int pipes[2];
+struct sigaction act;
+char writeBuffer[] = "second";
+char readBuffer[6];
+void *thread_result;
 
 void NewGame()
 {
 	InitializeGrid();
 	PlaceBombs();
 	CalculateAdjacentBombs();
+}
 
+void *thread_function(void *arg)
+{
+	while (read(pipes[0], readBuffer, sizeof(readBuffer)) > 0)
+	{
+		read(pipes[0], readBuffer, sizeof(readBuffer));
+		seconds++;
+		printf("%d\n", seconds);
+		memset(readBuffer, '\0', sizeof(readBuffer));
+	}
 
+	return 0;
 }
 
 void ouch(int sig)
 {
+	close(pipes[1]);
 	exit(0);
 }
 
 void StartTimer()
 {
-	pid = fork();
-	struct sigaction act;
+	if (pipe(pipes) == 0)
+    {
+    	pid = fork();
 
-	switch(pid)
-	{
-		case -1:
-			perror("fork failed");
-			exit(1);
-		case 0:
-			// Child process
-			act.sa_handler = ouch;
-			sigemptyset(&act.sa_mask);
-			act.sa_flags = 0;
+		switch(pid)
+		{
+			case -1:
+				perror("fork failed");
+				exit(1);
+			case 0:
+				// Child process
+				act.sa_handler = ouch;
+				sigemptyset(&act.sa_mask);
+				act.sa_flags = 0;
 
-			sigaction(SIGTERM, &act, 0);
+				sigaction(SIGTERM, &act, 0);
 
-			while (1)
-			{
-				seconds++;
-				printf("%d", seconds);
-				sleep(1);
-			}
+				while (1)
+				{
+					write(pipes[1], writeBuffer, sizeof(writeBuffer));
+					sleep(1);
+				}
 
-			break;
-	}
+				break;
+
+			default:
+				close(pipes[1]);
+				res = pthread_create(&a_thread, NULL, thread_function, NULL);
+				if (res != 0)
+				{
+					perror("thread creation failed");
+					exit(EXIT_FAILURE);
+				}
+				break;
+		}
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -129,6 +161,12 @@ int main(int argc, char *argv[]) {
 	kill(pid, SIGTERM);
 
 	waitpid(pid, (int*) 0, 0);
+
+	res = pthread_join(a_thread, &thread_result);
+	if (res != 0) {
+		perror("Thread join failed");
+		exit(EXIT_FAILURE);
+	}
 
 	//NewGame();
 

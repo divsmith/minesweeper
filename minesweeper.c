@@ -51,6 +51,7 @@ char readBuffer[6];
 void *thread_result;
 bool timerStarted = false;
 pthread_mutex_t secondsMutex;
+pthread_mutex_t screenMutex;
 WINDOW *hud, *board;
 
 int main(int argc, char *argv[]) {
@@ -88,38 +89,55 @@ int main(int argc, char *argv[]) {
 //			Usage();
 //	}
 //
-//	InitializeMutexes();
+	InitializeMutexes();
 
 	InitializeScreens();
 
 	PrintHud();
 
-//	NewGame();
-//
-//	StartTimer();
-//
-//	kill(pid, SIGTERM);
-//
-//	waitpid(pid, (int*) 0, 0);
-//
-//	res = pthread_join(a_thread, &thread_result);
-//	if (res != 0) {
-//		perror("Thread join failed");
-//		exit(EXIT_FAILURE);
-//	}
-//
+	NewGame();
 
-	sleep(2);
+	StartTimer();
+
+	sleep(20);
+
+	kill(pid, SIGTERM);
+
+	waitpid(pid, (int*) 0, 0);
+
+	res = pthread_join(a_thread, &thread_result);
+	if (res != 0) {
+		perror("Thread join failed");
+		exit(EXIT_FAILURE);
+	}
+
 	endwin();
 	exit(0);
 }
 
 void PrintHud()
 {
+	pthread_mutex_lock(&screenMutex);
 	wclear(hud);
 	mvwprintw(hud, 1, (COLS / 2) - 6, "%s", "MINESWEEPER");
-	mvwprintw(hud, 3, (COLS / 2) - 30, "Difficulty: %s\tBombs Remaining: %d\tTime: %d:%d", "Easy", 10, 1, 30);
+
+	pthread_mutex_lock(&secondsMutex);
+	if (seconds % 60 < 10)
+	{
+		mvwprintw(hud, 3, (COLS / 2) - 30, "Difficulty: %s\tBombs Remaining: %d\tTime: %d:0%d", "Easy", 10, (seconds / 60), (seconds % 60));
+	}
+	else
+	{
+		mvwprintw(hud, 3, (COLS / 2) - 30, "Difficulty: %s\tBombs Remaining: %d\tTime: %d:%d", "Easy", 10, (seconds / 60), (seconds % 60));
+	}
+	pthread_mutex_unlock(&secondsMutex);
+
+	wmove(board, 10, 10);
+
 	wrefresh(hud);
+	wrefresh(board);
+
+	pthread_mutex_unlock(&screenMutex);
 }
 
 void InitializeScreens()
@@ -190,6 +208,14 @@ void InitializeMutexes()
 		perror("Seconds mutex initialization failed");
 		exit(EXIT_FAILURE);
 	}
+
+	res = pthread_mutex_init(&screenMutex, NULL);
+
+	if (res != 0)
+	{
+		perror("Screen mutex initialization failed");
+		exit(EXIT_FAILURE);
+	}
 }
 
 void Click(int i, int j)
@@ -217,7 +243,8 @@ void *TimerThread(void *arg)
 		pthread_mutex_lock(&secondsMutex);
 		seconds++;
 		pthread_mutex_unlock(&secondsMutex);
-		//printf("%d\n", seconds);
+
+		PrintHud();
 		memset(readBuffer, '\0', sizeof(readBuffer));
 	}
 

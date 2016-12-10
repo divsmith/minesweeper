@@ -22,6 +22,7 @@ void ViewScores();
 void Click(int i, int j);
 void StartTimer();
 void *TimerThread (void *args);
+void SIGTERMHandler(int sig);
 
 struct Tile {
 	bool isMine;

@@ -74,7 +74,7 @@ void *TimerThread(void *arg)
 	return 0;
 }
 
-void ouch(int sig)
+void SIGTERMHandler(int sig)
 {
 	close(pipes[1]);
 	exit(0);
@@ -95,7 +95,7 @@ void StartTimer()
 					exit(1);
 				case 0:
 					// Child process
-					act.sa_handler = ouch;
+					act.sa_handler = SIGTERMHandler;
 					sigemptyset(&act.sa_mask);
 					act.sa_flags = 0;
 

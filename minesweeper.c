@@ -111,73 +111,6 @@ int main(int argc, char *argv[]) {
 
 	NewGame();
 
-	int key;
-
-	key = getch();
-
-	while (key != 'q' && key != 'r')
-	{
-		if (key == KEY_LEFT && boardX > 0)
-		{
-			boardX--;
-			screenX -= 2;
-		}
-
-		if (key == KEY_RIGHT && boardX < gridCols - 1)
-		{
-			boardX++;
-			screenX += 2;
-		}
-
-		if (key == KEY_UP && boardY > 0)
-		{
-			boardY--;
-			screenY--;
-		}
-
-		if (key == KEY_DOWN && boardY < gridRows - 1)
-		{
-			boardY++;
-			screenY++;
-		}
-
-		if (key == 10)
-		{
-			Click(boardY, boardX);
-		}
-
-		if (key == 'f')
-		{
-			if (!grid[boardY][boardX].isFlagged)
-			{
-				grid[boardY][boardX].isFlagged = true;
-				bombsRemaining--;
-
-				if (grid[boardY][boardX].isMine)
-				{
-					bombsCorrectlyFlagged++;
-				}
-			}
-			else
-			{
-				grid[boardY][boardX].isFlagged = false;
-
-				if (grid[boardY][boardX].isMine)
-				{
-					bombsCorrectlyFlagged--;
-				}
-				bombsRemaining++;
-			}
-		}
-		PrintBoard();
-		key = getch();
-	}
-
-	if (key == 'r')
-	{
-		NewGame();
-	}
-
 	kill(pid, SIGTERM);
 
 	waitpid(pid, (int*) 0, 0);
@@ -375,6 +308,73 @@ void NewGame()
 
 	PrintHud();
 	PrintBoard();
+
+	int key;
+
+	key = getch();
+
+	while (key != 'q' && key != 'r')
+	{
+		if (key == KEY_LEFT && boardX > 0)
+		{
+			boardX--;
+			screenX -= 2;
+		}
+
+		if (key == KEY_RIGHT && boardX < gridCols - 1)
+		{
+			boardX++;
+			screenX += 2;
+		}
+
+		if (key == KEY_UP && boardY > 0)
+		{
+			boardY--;
+			screenY--;
+		}
+
+		if (key == KEY_DOWN && boardY < gridRows - 1)
+		{
+			boardY++;
+			screenY++;
+		}
+
+		if (key == 10)
+		{
+			Click(boardY, boardX);
+		}
+
+		if (key == 'f')
+		{
+			if (!grid[boardY][boardX].isFlagged)
+			{
+				grid[boardY][boardX].isFlagged = true;
+				bombsRemaining--;
+
+				if (grid[boardY][boardX].isMine)
+				{
+					bombsCorrectlyFlagged++;
+				}
+			}
+			else
+			{
+				grid[boardY][boardX].isFlagged = false;
+
+				if (grid[boardY][boardX].isMine)
+				{
+					bombsCorrectlyFlagged--;
+				}
+				bombsRemaining++;
+			}
+		}
+		PrintBoard();
+		key = getch();
+	}
+
+	if (key == 'r')
+	{
+		NewGame();
+	}
 }
 
 void *TimerThread(void *arg)

@@ -8,6 +8,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <pthread.h>
+#include <curses.h>
 
 void NewGame();
 void PlaceBombs();
@@ -47,6 +48,7 @@ char readBuffer[6];
 void *thread_result;
 bool timerStarted = false;
 pthread_mutex_t secondsMutex;
+WINDOW *hud, *board;
 
 int main(int argc, char *argv[]) {
 
@@ -83,9 +85,17 @@ int main(int argc, char *argv[]) {
 			Usage();
 	}
 
-	StartTimer();
+	res = pthread_mutex_init(&secondsMutex, NULL);
+
+	if (res != 0)
+	{
+		perror("Seconds mutex initialization failed");
+		exit(EXIT_FAILURE);
+	}
 
 	NewGame();
+
+	StartTimer();
 
 	// Play game here
 
@@ -133,7 +143,7 @@ void *TimerThread(void *arg)
 		pthread_mutex_lock(&secondsMutex);
 		seconds++;
 		pthread_mutex_unlock(&secondsMutex);
-		printf("%d\n", seconds);
+		//printf("%d\n", seconds);
 		memset(readBuffer, '\0', sizeof(readBuffer));
 	}
 
@@ -177,14 +187,6 @@ void StartTimer()
 
 				default:
 					close(pipes[1]);
-
-					res = pthread_mutex_init(&secondsMutex, NULL);
-
-					if (res != 0)
-					{
-						perror("Seconds mutex initialization failed");
-						exit(EXIT_FAILURE);
-					}
 
 					res = pthread_create(&a_thread, NULL, TimerThread, NULL);
 					if (res != 0)

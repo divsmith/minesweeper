@@ -66,6 +66,7 @@ int boardX;
 int boardY;
 int initialX;
 int initialY;
+int difficulty;
 
 int main(int argc, char *argv[]) {
 //
@@ -82,15 +83,15 @@ int main(int argc, char *argv[]) {
 //	switch(argv[1][1])
 //	{
 //		case 'e':
-//			numberOfBombs = 5;
+//			difficulty = 0;
 //			break;
 //
 //		case 'n':
-//			numberOfBombs = 15;
+//			difficulty = 1;
 //			break;
 //
 //		case 'h':
-//			numberOfBombs = 25;
+//			difficulty = 2;
 //			break;
 //
 //		case 's':
@@ -102,7 +103,7 @@ int main(int argc, char *argv[]) {
 //			Usage();
 //	}
 
-	numberOfBombs = 7;
+	difficulty = 0;
 
 	InitializeMutexes();
 
@@ -298,6 +299,21 @@ void Click(int i, int j)
 
 void NewGame()
 {
+	switch(difficulty)
+	{
+		case 0:
+			numberOfBombs = 5;
+			break;
+
+		case 1:
+			numberOfBombs = 15;
+			break;
+
+		case 2:
+			numberOfBombs = 25;
+			break;
+	}
+
 	InitializeGrid();
 	PlaceBombs();
 	CalculateAdjacentBombs();
@@ -361,32 +377,35 @@ void NewGame()
 
 		if (key == 'f')
 		{
-			if (!grid[boardY][boardX].isFlagged)
+			if (!grid[boardY][boardX].isFloodFillMarked)
 			{
-				grid[boardY][boardX].isFlagged = true;
-				bombsRemaining--;
-
-				if (grid[boardY][boardX].isMine)
+				if (!grid[boardY][boardX].isFlagged)
 				{
-					bombsCorrectlyFlagged++;
-				}
-			}
-			else
-			{
-				grid[boardY][boardX].isFlagged = false;
+					grid[boardY][boardX].isFlagged = true;
+					bombsRemaining--;
 
-				if (grid[boardY][boardX].isMine)
+					if (grid[boardY][boardX].isMine)
+					{
+						bombsCorrectlyFlagged++;
+					}
+				}
+				else
 				{
-					bombsCorrectlyFlagged--;
-				}
-				bombsRemaining++;
-			}
+					grid[boardY][boardX].isFlagged = false;
 
-			if (bombsCorrectlyFlagged == numberOfBombs)
-			{
-				pthread_mutex_lock(&wonLostMutex);
-				gameWon = true;
-				pthread_mutex_unlock(&wonLostMutex);
+					if (grid[boardY][boardX].isMine)
+					{
+						bombsCorrectlyFlagged--;
+					}
+					bombsRemaining++;
+				}
+
+				if (bombsCorrectlyFlagged == numberOfBombs)
+				{
+					pthread_mutex_lock(&wonLostMutex);
+					gameWon = true;
+					pthread_mutex_unlock(&wonLostMutex);
+				}
 			}
 		}
 
@@ -396,7 +415,25 @@ void NewGame()
 	pthread_mutex_lock(&wonLostMutex);
 	if (gameWon)
 	{
+		/*int gameSeconds;
+		int score;*/
 
+		pthread_mutex_lock(&secondsMutex);
+		//gameSeconds = seconds;
+		pthread_mutex_unlock(&secondsMutex);
+
+
+		usleep(750000);
+		wclear(hud);
+		wclear(board);
+
+		mvwprintw(board, 1, (COLS / 2) - 4, "%s", "You Won!");
+		mvwprintw(board, 3, (COLS / 2) - 9, "Your score was %d", 10);
+
+		wrefresh(hud);
+		wrefresh(board);
+
+		sleep(2);
 	}
 
 	if (gameLost)

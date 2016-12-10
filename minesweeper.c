@@ -151,8 +151,6 @@ int main(int argc, char *argv[]) {
 		key = getch();
 	}
 
-	//sleep(3);
-
 	kill(pid, SIGTERM);
 
 	waitpid(pid, (int*) 0, 0);

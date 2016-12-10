@@ -9,6 +9,7 @@
 #include <signal.h>
 #include <pthread.h>
 #include <curses.h>
+#include <ncurses.h>
 
 void NewGame();
 void PlaceBombs();
@@ -55,6 +56,12 @@ bool timerStarted = false;
 pthread_mutex_t secondsMutex;
 pthread_mutex_t screenMutex;
 WINDOW *hud, *board;
+int screenX;
+int screenY;
+int boardX;
+int boardY;
+int initialX;
+int initialY;
 
 int main(int argc, char *argv[]) {
 //
@@ -101,10 +108,50 @@ int main(int argc, char *argv[]) {
 
 	StartTimer();
 
-	while (true)
+	int key;
+	cbreak();
+	noecho();
+	timeout(100);
+	//nodelay(stdscr, TRUE);
+	keypad(stdscr, TRUE);
+
+	key = getch();
+
+	while (key != 'q')
 	{
-		sleep(4);
+		if (key == KEY_LEFT && boardX > 0)
+		{
+			boardX--;
+			screenX -= 2;
+		}
+
+		if (key == KEY_RIGHT && boardX < gridCols - 1)
+		{
+			boardX++;
+			screenX += 2;
+		}
+
+		if (key == KEY_UP && boardY > 0)
+		{
+			boardY--;
+			screenY--;
+		}
+
+		if (key == KEY_DOWN && boardY < gridRows - 1)
+		{
+			boardY++;
+			screenY++;
+		}
+
+		if (key == 10)
+		{
+			Click(boardY, boardX);
+		}
+		PrintBoard();
+		key = getch();
 	}
+
+	//sleep(3);
 
 	kill(pid, SIGTERM);
 
@@ -116,6 +163,9 @@ int main(int argc, char *argv[]) {
 		exit(EXIT_FAILURE);
 	}
 
+
+	echo();
+	nocbreak();
 	endwin();
 	exit(0);
 }
@@ -124,8 +174,6 @@ void PrintBoard()
 {
 	pthread_mutex_lock(&screenMutex);
 	wclear(board);
-	int initialY = 1;
-	int initialX = (COLS / 2) - gridCols;
 	int currentY = initialY;
 	int currentX = initialX;
 
@@ -156,6 +204,8 @@ void PrintBoard()
 		currentX = initialX;
 	}
 
+	wmove(board, screenY, screenX);
+
 	wrefresh(board);
 	pthread_mutex_unlock(&screenMutex);
 }
@@ -177,7 +227,7 @@ void PrintHud()
 	}
 	pthread_mutex_unlock(&secondsMutex);
 
-	wmove(board, 10, 10);
+	wmove(board, screenY, screenX);
 
 	wrefresh(hud);
 	wrefresh(board);
@@ -274,6 +324,15 @@ void NewGame()
 	PlaceBombs();
 	CalculateAdjacentBombs();
 	bombsRemaining = numberOfBombs;
+
+	initialY = 1;
+    initialX = (COLS / 2) - gridCols;
+
+    screenY = initialY;
+    screenX = initialX;
+
+    boardY = 0;
+    boardX = 0;
 
 	pthread_mutex_lock(&secondsMutex);
 	seconds = 0;

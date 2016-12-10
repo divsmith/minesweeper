@@ -112,10 +112,6 @@ int main(int argc, char *argv[]) {
 	NewGame();
 
 	int key;
-	cbreak();
-	noecho();
-	timeout(100);
-	keypad(stdscr, TRUE);
 
 	key = getch();
 
@@ -287,6 +283,11 @@ void InitializeScreens()
 
     hud = newwin(5, COLS, 0, 0);
     board = newwin(LINES - 5, COLS, 5, 0);
+
+    cbreak();
+	noecho();
+	timeout(100);
+	keypad(stdscr, TRUE);
 
     //	for (int i = 0; i < 5; i++)
     //	{

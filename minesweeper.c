@@ -43,6 +43,9 @@ int gridRows = 10;
 int gridCols = 10;
 int numberOfBombs;
 int bombsRemaining;
+int bombsCorrectlyFlagged;
+bool gameLost;
+bool gameWon;
 pid_t pid;
 int seconds;
 pthread_t a_thread;
@@ -104,20 +107,19 @@ int main(int argc, char *argv[]) {
 
 	InitializeScreens();
 
-	NewGame();
-
 	StartTimer();
+
+	NewGame();
 
 	int key;
 	cbreak();
 	noecho();
 	timeout(100);
-	//nodelay(stdscr, TRUE);
 	keypad(stdscr, TRUE);
 
 	key = getch();
 
-	while (key != 'q')
+	while (key != 'q' && key != 'r')
 	{
 		if (key == KEY_LEFT && boardX > 0)
 		{
@@ -154,16 +156,30 @@ int main(int argc, char *argv[]) {
 			{
 				grid[boardY][boardX].isFlagged = true;
 				bombsRemaining--;
+
+				if (grid[boardY][boardX].isMine)
+				{
+					bombsCorrectlyFlagged++;
+				}
 			}
 			else
 			{
 				grid[boardY][boardX].isFlagged = false;
+
+				if (grid[boardY][boardX].isMine)
+				{
+					bombsCorrectlyFlagged--;
+				}
 				bombsRemaining++;
 			}
-
 		}
 		PrintBoard();
 		key = getch();
+	}
+
+	if (key == 'r')
+	{
+		NewGame();
 	}
 
 	kill(pid, SIGTERM);
@@ -175,7 +191,6 @@ int main(int argc, char *argv[]) {
 		perror("Thread join failed");
 		exit(EXIT_FAILURE);
 	}
-
 
 	echo();
 	nocbreak();
@@ -350,6 +365,8 @@ void NewGame()
 
     boardY = 0;
     boardX = 0;
+
+    bombsCorrectlyFlagged = 0;
 
 	pthread_mutex_lock(&secondsMutex);
 	seconds = 0;

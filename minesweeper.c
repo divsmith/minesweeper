@@ -69,41 +69,39 @@ int initialY;
 int difficulty;
 
 int main(int argc, char *argv[]) {
-//
-//	if (argc > 2 || argc == 1)
-//	{
-//		Usage();
-//	}
-//
-//	if (strlen(argv[1]) != 2 || argv[1][0] != '-')
-//	{
-//		Usage();
-//	}
-//
-//	switch(argv[1][1])
-//	{
-//		case 'e':
-//			difficulty = 0;
-//			break;
-//
-//		case 'n':
-//			difficulty = 1;
-//			break;
-//
-//		case 'h':
-//			difficulty = 2;
-//			break;
-//
-//		case 's':
-//			ViewScores();
-//			exit(0);
-//			break;
-//
-//		default:
-//			Usage();
-//	}
 
-	difficulty = 0;
+	if (argc > 2 || argc == 1)
+	{
+		Usage();
+	}
+
+	if (strlen(argv[1]) != 2 || argv[1][0] != '-')
+	{
+		Usage();
+	}
+
+	switch(argv[1][1])
+	{
+		case 'e':
+			difficulty = 0;
+			break;
+
+		case 'n':
+			difficulty = 1;
+			break;
+
+		case 'h':
+			difficulty = 2;
+			break;
+
+		case 's':
+			ViewScores();
+			exit(0);
+			break;
+
+		default:
+			Usage();
+	}
 
 	InitializeMutexes();
 
@@ -181,15 +179,31 @@ void PrintHud()
 	pthread_mutex_lock(&screenMutex);
 	wclear(hud);
 	mvwprintw(hud, 1, (COLS / 2) - 6, "%s", "MINESWEEPER");
+	char *diff;
+
+	switch(difficulty)
+	{
+		case 0:
+			diff = "Easy";
+			break;
+
+		case 1:
+			diff = "Normal";
+			break;
+
+		case 2:
+			diff = "Hard";
+			break;
+	}
 
 	pthread_mutex_lock(&secondsMutex);
 	if (seconds % 60 < 10)
 	{
-		mvwprintw(hud, 3, (COLS / 2) - 30, "Difficulty: %s\tBombs Remaining: %d\tTime: %d:0%d", "Easy", bombsRemaining, (seconds / 60), (seconds % 60));
+		mvwprintw(hud, 3, (COLS / 2) - 30, "Difficulty: %s\tBombs Remaining: %d\tTime: %d:0%d", diff, bombsRemaining, (seconds / 60), (seconds % 60));
 	}
 	else
 	{
-		mvwprintw(hud, 3, (COLS / 2) - 30, "Difficulty: %s\tBombs Remaining: %d\tTime: %d:%d", "Easy", bombsRemaining, (seconds / 60), (seconds % 60));
+		mvwprintw(hud, 3, (COLS / 2) - 30, "Difficulty: %s\tBombs Remaining: %d\tTime: %d:%d", diff, bombsRemaining, (seconds / 60), (seconds % 60));
 	}
 	pthread_mutex_unlock(&secondsMutex);
 

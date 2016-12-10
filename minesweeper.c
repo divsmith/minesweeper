@@ -45,6 +45,7 @@ char writeBuffer[] = "second";
 char readBuffer[6];
 void *thread_result;
 bool timerStarted = false;
+pthread_mutex_t secondsMutex;
 
 void NewGame()
 {
@@ -52,8 +53,9 @@ void NewGame()
 	PlaceBombs();
 	CalculateAdjacentBombs();
 
-	// Add mutex
+	pthread_mutex_lock(&secondsMutex);
 	seconds = 0;
+	pthread_mutex_unlock(&secondsMutex);
 }
 
 void *thread_function(void *arg)
@@ -61,8 +63,10 @@ void *thread_function(void *arg)
 	while (read(pipes[0], readBuffer, sizeof(readBuffer)) > 0)
 	{
 		read(pipes[0], readBuffer, sizeof(readBuffer));
-		// Add mutex
+
+		pthread_mutex_lock(&secondsMutex);
 		seconds++;
+		pthread_mutex_unlock(&secondsMutex);
 		//printf("%d\n", seconds);
 		memset(readBuffer, '\0', sizeof(readBuffer));
 	}
@@ -107,6 +111,15 @@ void StartTimer()
 
 				default:
 					close(pipes[1]);
+
+					res = pthread_mutex_init(&secondsMutex, NULL);
+
+					if (res != 0)
+					{
+						perror("Seconds mutex initialization failed");
+						exit(EXIT_FAILURE);
+					}
+
 					res = pthread_create(&a_thread, NULL, thread_function, NULL);
 					if (res != 0)
 					{
@@ -136,8 +149,6 @@ int main(int argc, char *argv[]) {
 	{
 		Usage();
 	}
-
-	seconds = 0;
 
 	switch(argv[1][1])
 	{

@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
 //			Usage();
 //	}
 
-	numberOfBombs = 15;
+	numberOfBombs = 7;
 
 	InitializeMutexes();
 
@@ -147,6 +147,21 @@ int main(int argc, char *argv[]) {
 		{
 			Click(boardY, boardX);
 		}
+
+		if (key == 'f')
+		{
+			if (!grid[boardY][boardX].isFlagged)
+			{
+				grid[boardY][boardX].isFlagged = true;
+				bombsRemaining--;
+			}
+			else
+			{
+				grid[boardY][boardX].isFlagged = false;
+				bombsRemaining++;
+			}
+
+		}
 		PrintBoard();
 		key = getch();
 	}
@@ -189,6 +204,10 @@ void PrintBoard()
 				{
 					mvwprintw(board, currentY, currentX, "%d", grid[i][j].adjacentMines);
 				}
+			}
+			else if (grid[i][j].isFlagged)
+			{
+				mvwprintw(board, currentY, currentX, "%s", "F");
 			}
 			else
 			{
@@ -446,7 +465,10 @@ void FloodFill(int i, int j)
 {
 	if (i < gridRows && j < gridCols)
 	{
-		grid[i][j].isFloodFillMarked = true;
+		if (!grid[i][j].isFlagged)
+		{
+			grid[i][j].isFloodFillMarked = true;
+		}
 
 		if (grid[i][j].adjacentMines == 0 && !grid[i][j].isMine)
 		{

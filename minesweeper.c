@@ -27,6 +27,7 @@ void SIGTERMHandler(int sig);
 void InitializeMutexes();
 void InitializeScreens();
 void PrintHud();
+void PrintBoard();
 
 struct Tile {
 	bool isMine;
@@ -56,39 +57,41 @@ pthread_mutex_t screenMutex;
 WINDOW *hud, *board;
 
 int main(int argc, char *argv[]) {
+//
+//	if (argc > 2 || argc == 1)
+//	{
+//		Usage();
+//	}
+//
+//	if (strlen(argv[1]) != 2 || argv[1][0] != '-')
+//	{
+//		Usage();
+//	}
+//
+//	switch(argv[1][1])
+//	{
+//		case 'e':
+//			numberOfBombs = 5;
+//			break;
+//
+//		case 'n':
+//			numberOfBombs = 15;
+//			break;
+//
+//		case 'h':
+//			numberOfBombs = 25;
+//			break;
+//
+//		case 's':
+//			ViewScores();
+//			exit(0);
+//			break;
+//
+//		default:
+//			Usage();
+//	}
 
-	if (argc > 2 || argc == 1)
-	{
-		Usage();
-	}
-
-	if (strlen(argv[1]) != 2 || argv[1][0] != '-')
-	{
-		Usage();
-	}
-
-	switch(argv[1][1])
-	{
-		case 'e':
-			numberOfBombs = 5;
-			break;
-
-		case 'n':
-			numberOfBombs = 15;
-			break;
-
-		case 'h':
-			numberOfBombs = 25;
-			break;
-
-		case 's':
-			ViewScores();
-			exit(0);
-			break;
-
-		default:
-			Usage();
-	}
+	numberOfBombs = 15;
 
 	InitializeMutexes();
 
@@ -98,7 +101,10 @@ int main(int argc, char *argv[]) {
 
 	StartTimer();
 
-	sleep(20);
+	while (true)
+	{
+		sleep(4);
+	}
 
 	kill(pid, SIGTERM);
 
@@ -112,6 +118,46 @@ int main(int argc, char *argv[]) {
 
 	endwin();
 	exit(0);
+}
+
+void PrintBoard()
+{
+	pthread_mutex_lock(&screenMutex);
+	wclear(board);
+	int initialY = 1;
+	int initialX = (COLS / 2) - gridCols;
+	int currentY = initialY;
+	int currentX = initialX;
+
+	for (int i = 0; i < gridRows; i++)
+	{
+		for (int j = 0; j < gridCols; j++)
+		{
+			if (grid[i][j].isFloodFillMarked)
+			{
+				if (grid[i][j].isMine)
+				{
+					mvwprintw(board, currentY, currentX, "%s", "X");
+				}
+				else
+				{
+					mvwprintw(board, currentY, currentX, "%d", grid[i][j].adjacentMines);
+				}
+			}
+			else
+			{
+				mvwprintw(board, currentY, currentX, "%s", "-");
+			}
+
+			currentX += 2;
+		}
+
+		currentY++;
+		currentX = initialX;
+	}
+
+	wrefresh(board);
+	pthread_mutex_unlock(&screenMutex);
 }
 
 void PrintHud()
@@ -232,6 +278,9 @@ void NewGame()
 	pthread_mutex_lock(&secondsMutex);
 	seconds = 0;
 	pthread_mutex_unlock(&secondsMutex);
+
+	PrintHud();
+	PrintBoard();
 }
 
 void *TimerThread(void *arg)
@@ -524,8 +573,8 @@ void PlaceBombs()
 
 	for (int i = 0; i < numberOfBombs; i++)
 	{
-		bombRow = rand() % 10;
-		bombCol = rand() % 10;
+		bombRow = rand() % gridRows;
+		bombCol = rand() % gridCols;
 
 		if (grid[bombRow][bombCol].isMine)
 		{

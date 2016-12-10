@@ -575,55 +575,6 @@ void CalculateAdjacentBombs()
 	}
 }
 
-void PrintGrid()
-{
-	for (int i = 0; i < gridRows; i++)
-	{
-		for (int j = 0; j < gridCols; j++)
-		{
-			if (grid[i][j].isFloodFillMarked)
-			{
-				if (grid[i][j].isMine)
-				{
-					printf("%s", "X");
-				}
-				else
-				{
-					printf("%d", grid[i][j].adjacentMines);
-				}
-			}
-			else
-			{
-				printf("-");
-			}
-
-			printf(" ");
-		}
-		printf("\n");
-	}
-}
-
-void PrintWholeGrid()
-{
-	for (int i = 0; i < gridRows; i++)
-	{
-		for (int j = 0; j < gridCols; j++)
-		{
-			if (grid[i][j].isMine)
-			{
-				printf("%s", "X");
-			}
-			else
-			{
-				printf("%d", grid[i][j].adjacentMines);
-			}
-
-			printf(" ");
-		}
-		printf("\n");
-	}
-}
-
 void PlaceBombs()
 {
 	srand((unsigned)time(NULL));

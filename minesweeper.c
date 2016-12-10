@@ -21,7 +21,7 @@ void Usage();
 void ViewScores();
 void Click(int i, int j);
 void StartTimer();
-void *thread_function (void *args);
+void *TimerThread (void *args);
 
 struct Tile {
 	bool isMine;
@@ -58,7 +58,7 @@ void NewGame()
 	pthread_mutex_unlock(&secondsMutex);
 }
 
-void *thread_function(void *arg)
+void *TimerThread(void *arg)
 {
 	while (read(pipes[0], readBuffer, sizeof(readBuffer)) > 0)
 	{
@@ -67,7 +67,7 @@ void *thread_function(void *arg)
 		pthread_mutex_lock(&secondsMutex);
 		seconds++;
 		pthread_mutex_unlock(&secondsMutex);
-		//printf("%d\n", seconds);
+		printf("%d\n", seconds);
 		memset(readBuffer, '\0', sizeof(readBuffer));
 	}
 
@@ -120,7 +120,7 @@ void StartTimer()
 						exit(EXIT_FAILURE);
 					}
 
-					res = pthread_create(&a_thread, NULL, thread_function, NULL);
+					res = pthread_create(&a_thread, NULL, TimerThread, NULL);
 					if (res != 0)
 					{
 						perror("thread creation failed");
@@ -179,6 +179,11 @@ int main(int argc, char *argv[]) {
 
 	// Play game here
 
+	sleep(5);
+
+	NewGame();
+
+	sleep(7);
 
 	kill(pid, SIGTERM);
 

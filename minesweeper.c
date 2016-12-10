@@ -26,6 +26,7 @@ void *TimerThread (void *args);
 void SIGTERMHandler(int sig);
 void InitializeMutexes();
 void InitializeScreens();
+void PrintHud();
 
 struct Tile {
 	bool isMine;
@@ -54,84 +55,130 @@ WINDOW *hud, *board;
 
 int main(int argc, char *argv[]) {
 
-	if (argc > 2 || argc == 1)
-	{
-		Usage();
-	}
-
-	if (strlen(argv[1]) != 2 || argv[1][0] != '-')
-	{
-		Usage();
-	}
-
-	switch(argv[1][1])
-	{
-		case 'e':
-			numberOfBombs = 5;
-			break;
-
-		case 'n':
-			numberOfBombs = 15;
-			break;
-
-		case 'h':
-			numberOfBombs = 25;
-			break;
-
-		case 's':
-			ViewScores();
-			exit(0);
-			break;
-
-		default:
-			Usage();
-	}
-
-	InitializeMutexes();
+//	if (argc > 2 || argc == 1)
+//	{
+//		Usage();
+//	}
+//
+//	if (strlen(argv[1]) != 2 || argv[1][0] != '-')
+//	{
+//		Usage();
+//	}
+//
+//	switch(argv[1][1])
+//	{
+//		case 'e':
+//			numberOfBombs = 5;
+//			break;
+//
+//		case 'n':
+//			numberOfBombs = 15;
+//			break;
+//
+//		case 'h':
+//			numberOfBombs = 25;
+//			break;
+//
+//		case 's':
+//			ViewScores();
+//			exit(0);
+//			break;
+//
+//		default:
+//			Usage();
+//	}
+//
+//	InitializeMutexes();
 
 	InitializeScreens();
 
-	NewGame();
+	PrintHud();
 
-	StartTimer();
+//	NewGame();
+//
+//	StartTimer();
+//
+//	kill(pid, SIGTERM);
+//
+//	waitpid(pid, (int*) 0, 0);
+//
+//	res = pthread_join(a_thread, &thread_result);
+//	if (res != 0) {
+//		perror("Thread join failed");
+//		exit(EXIT_FAILURE);
+//	}
+//
 
-	printf("%d, %d", COLS, LINES);
-
-	kill(pid, SIGTERM);
-
-	waitpid(pid, (int*) 0, 0);
-
-	res = pthread_join(a_thread, &thread_result);
-	if (res != 0) {
-		perror("Thread join failed");
-		exit(EXIT_FAILURE);
-	}
-
+	sleep(2);
 	endwin();
-
 	exit(0);
+}
+
+void PrintHud()
+{
+	wclear(hud);
+	mvwprintw(hud, 1, (COLS / 2) - 6, "%s", "MINESWEEPER");
+	mvwprintw(hud, 3, (COLS / 2) - 30, "Difficulty: %s\tBombs Remaining: %d\tTime: %d:%d", "Easy", 10, 1, 30);
+	wrefresh(hud);
 }
 
 void InitializeScreens()
 {
 	initscr();
 
-	if (!has_colors())
-	{
-		endwin();
-		fprintf(stderr, "Error - no color support on this terminal\n");
-		exit(1);
-	}
+    //	if (!has_colors())
+    //	{
+    //		endwin();
+    //		fprintf(stderr, "Error - no color support on this terminal\n");
+    //		exit(1);
+    //	}
+    //
+    //	if (start_color() != OK)
+    //	{
+    //		endwin();
+    //		fprintf(stderr, "Error - could not initialize colors\n");
+    //		exit(2);
+    //	}
 
-	if (start_color() != OK)
-	{
-		endwin();
-		fprintf(stderr, "Error - could not initialize colors\n");
-		exit(2);
-	}
+    hud = newwin(5, COLS, 0, 0);
+    board = newwin(LINES - 5, COLS, 5, 0);
 
-	hud = newwin(3, COLS, 0, 0);
-	board = newwin(LINES - 3, COLS, 3, 0);
+    //	for (int i = 0; i < 5; i++)
+    //	{
+    //		for (int j = 0; j < COLS; j++)
+    //		{
+    //			mvwaddch(hud, i, j, 'H');
+    //			wrefresh(hud);
+    //			usleep(1000);
+    //		}
+    //	}
+    //
+    //	for (int i = 0; i < LINES - 5; i++)
+    //	{
+    //		for (int j = 0; j < COLS; j++)
+    //		{
+    //			mvwaddch(board, i, j, 'B');
+    //			wrefresh(board);
+    //			usleep(1000);
+    //		}
+    //	}
+    //
+    //	PrintHud();
+    //
+    //	sleep(2);
+
+    //	wmove(board, 10, 10);
+    //	wrefresh(board);
+    //
+    //	sleep(2);
+
+    //	mvwprintw(hud, 1, 5, "%s", "Hello World!");
+    //	wrefresh(hud);
+    //
+    //	sleep(3);
+    //
+    //	mvwprintw(hud, 1, 20, "%s", "test");
+    //	wrefresh(hud);
 }
 
 void InitializeMutexes()

@@ -429,20 +429,34 @@ void NewGame()
 	pthread_mutex_lock(&wonLostMutex);
 	if (gameWon)
 	{
-		/*int gameSeconds;
-		int score;*/
+		int gameSeconds;
+		int score;
 
 		pthread_mutex_lock(&secondsMutex);
-		//gameSeconds = seconds;
+		gameSeconds = seconds;
 		pthread_mutex_unlock(&secondsMutex);
 
+		switch(difficulty)
+		{
+			case 0:
+				score = 250 - gameSeconds;
+				break;
+
+			case 1:
+				score = 500 - gameSeconds;
+				break;
+
+			case 2:
+				score = 1000 - gameSeconds;
+				break;
+		}
 
 		usleep(750000);
 		wclear(hud);
 		wclear(board);
 
 		mvwprintw(board, 1, (COLS / 2) - 4, "%s", "You Won!");
-		mvwprintw(board, 3, (COLS / 2) - 9, "Your score was %d", 10);
+		mvwprintw(board, 3, (COLS / 2) - 9, "Your score was %d", score);
 
 		wrefresh(hud);
 		wrefresh(board);

@@ -24,6 +24,8 @@ void Click(int i, int j);
 void StartTimer();
 void *TimerThread (void *args);
 void SIGTERMHandler(int sig);
+void InitializeMutexes();
+void InitializeScreens();
 
 struct Tile {
 	bool isMine;
@@ -85,25 +87,15 @@ int main(int argc, char *argv[]) {
 			Usage();
 	}
 
-	res = pthread_mutex_init(&secondsMutex, NULL);
+	InitializeMutexes();
 
-	if (res != 0)
-	{
-		perror("Seconds mutex initialization failed");
-		exit(EXIT_FAILURE);
-	}
+	InitializeScreens();
 
 	NewGame();
 
 	StartTimer();
 
-	// Play game here
-
-	sleep(5);
-
-	NewGame();
-
-	sleep(7);
+	printf("%d, %d", COLS, LINES);
 
 	kill(pid, SIGTERM);
 
@@ -115,7 +107,42 @@ int main(int argc, char *argv[]) {
 		exit(EXIT_FAILURE);
 	}
 
+	endwin();
+
 	exit(0);
+}
+
+void InitializeScreens()
+{
+	initscr();
+
+	if (!has_colors())
+	{
+		endwin();
+		fprintf(stderr, "Error - no color support on this terminal\n");
+		exit(1);
+	}
+
+	if (start_color() != OK)
+	{
+		endwin();
+		fprintf(stderr, "Error - could not initialize colors\n");
+		exit(2);
+	}
+
+	hud = newwin(3, COLS, 0, 0);
+	board = newwin(LINES - 3, COLS, 3, 0);
+}
+
+void InitializeMutexes()
+{
+	res = pthread_mutex_init(&secondsMutex, NULL);
+
+	if (res != 0)
+	{
+		perror("Seconds mutex initialization failed");
+		exit(EXIT_FAILURE);
+	}
 }
 
 void Click(int i, int j)

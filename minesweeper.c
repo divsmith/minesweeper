@@ -300,6 +300,9 @@ void NewGame()
     boardY = 0;
     boardX = 0;
 
+    gameLost = false;
+    gameWon = false;
+
     bombsCorrectlyFlagged = 0;
 
 	pthread_mutex_lock(&secondsMutex);
@@ -311,10 +314,10 @@ void NewGame()
 
 	int key;
 
-	key = getch();
-
-	while (key != 'q' && key != 'r')
+	do
 	{
+		key = getch();
+
 		if (key == KEY_LEFT && boardX > 0)
 		{
 			boardX--;
@@ -366,9 +369,19 @@ void NewGame()
 				}
 				bombsRemaining++;
 			}
+
+			if (bombsCorrectlyFlagged == numberOfBombs)
+			{
+				gameWon = true;
+			}
 		}
+
 		PrintBoard();
-		key = getch();
+	} while (key != 'q' && key != 'r' && !gameLost && !gameWon);
+
+	if (gameWon)
+	{
+
 	}
 
 	if (key == 'r')

@@ -48,6 +48,71 @@ void *thread_result;
 bool timerStarted = false;
 pthread_mutex_t secondsMutex;
 
+int main(int argc, char *argv[]) {
+
+	if (argc > 2 || argc == 1)
+	{
+		Usage();
+	}
+
+	if (strlen(argv[1]) != 2 || argv[1][0] != '-')
+	{
+		Usage();
+	}
+
+	switch(argv[1][1])
+	{
+		case 'e':
+			numberOfBombs = 5;
+			break;
+
+		case 'n':
+			numberOfBombs = 15;
+			break;
+
+		case 'h':
+			numberOfBombs = 25;
+			break;
+
+		case 's':
+			ViewScores();
+			exit(0);
+			break;
+
+		default:
+			Usage();
+	}
+
+	StartTimer();
+
+	NewGame();
+
+	// Play game here
+
+	sleep(5);
+
+	NewGame();
+
+	sleep(7);
+
+	kill(pid, SIGTERM);
+
+	waitpid(pid, (int*) 0, 0);
+
+	res = pthread_join(a_thread, &thread_result);
+	if (res != 0) {
+		perror("Thread join failed");
+		exit(EXIT_FAILURE);
+	}
+
+	exit(0);
+}
+
+void Click(int i, int j)
+{
+	FloodFill(i, j);
+}
+
 void NewGame()
 {
 	InitializeGrid();
@@ -137,71 +202,6 @@ void StartTimer()
 
 		timerStarted = true;
 	}
-}
-
-int main(int argc, char *argv[]) {
-
-	if (argc > 2 || argc == 1)
-	{
-		Usage();
-	}
-
-	if (strlen(argv[1]) != 2 || argv[1][0] != '-')
-	{
-		Usage();
-	}
-
-	switch(argv[1][1])
-	{
-		case 'e':
-			numberOfBombs = 5;
-			break;
-
-		case 'n':
-			numberOfBombs = 15;
-			break;
-
-		case 'h':
-			numberOfBombs = 25;
-			break;
-
-		case 's':
-			ViewScores();
-			exit(0);
-			break;
-
-		default:
-			Usage();
-	}
-
-	StartTimer();
-
-	NewGame();
-
-	// Play game here
-
-	sleep(5);
-
-	NewGame();
-
-	sleep(7);
-
-	kill(pid, SIGTERM);
-
-	waitpid(pid, (int*) 0, 0);
-
-	res = pthread_join(a_thread, &thread_result);
-	if (res != 0) {
-		perror("Thread join failed");
-		exit(EXIT_FAILURE);
-	}
-
-	exit(0);
-}
-
-void Click(int i, int j)
-{
-	FloodFill(i, j);
 }
 
 void ViewScores()

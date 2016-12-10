@@ -40,6 +40,7 @@ struct Tile grid[10][10];
 int gridRows = 10;
 int gridCols = 10;
 int numberOfBombs;
+int bombsRemaining;
 pid_t pid;
 int seconds;
 pthread_t a_thread;
@@ -56,44 +57,42 @@ WINDOW *hud, *board;
 
 int main(int argc, char *argv[]) {
 
-//	if (argc > 2 || argc == 1)
-//	{
-//		Usage();
-//	}
-//
-//	if (strlen(argv[1]) != 2 || argv[1][0] != '-')
-//	{
-//		Usage();
-//	}
-//
-//	switch(argv[1][1])
-//	{
-//		case 'e':
-//			numberOfBombs = 5;
-//			break;
-//
-//		case 'n':
-//			numberOfBombs = 15;
-//			break;
-//
-//		case 'h':
-//			numberOfBombs = 25;
-//			break;
-//
-//		case 's':
-//			ViewScores();
-//			exit(0);
-//			break;
-//
-//		default:
-//			Usage();
-//	}
-//
+	if (argc > 2 || argc == 1)
+	{
+		Usage();
+	}
+
+	if (strlen(argv[1]) != 2 || argv[1][0] != '-')
+	{
+		Usage();
+	}
+
+	switch(argv[1][1])
+	{
+		case 'e':
+			numberOfBombs = 5;
+			break;
+
+		case 'n':
+			numberOfBombs = 15;
+			break;
+
+		case 'h':
+			numberOfBombs = 25;
+			break;
+
+		case 's':
+			ViewScores();
+			exit(0);
+			break;
+
+		default:
+			Usage();
+	}
+
 	InitializeMutexes();
 
 	InitializeScreens();
-
-	PrintHud();
 
 	NewGame();
 
@@ -124,11 +123,11 @@ void PrintHud()
 	pthread_mutex_lock(&secondsMutex);
 	if (seconds % 60 < 10)
 	{
-		mvwprintw(hud, 3, (COLS / 2) - 30, "Difficulty: %s\tBombs Remaining: %d\tTime: %d:0%d", "Easy", 10, (seconds / 60), (seconds % 60));
+		mvwprintw(hud, 3, (COLS / 2) - 30, "Difficulty: %s\tBombs Remaining: %d\tTime: %d:0%d", "Easy", bombsRemaining, (seconds / 60), (seconds % 60));
 	}
 	else
 	{
-		mvwprintw(hud, 3, (COLS / 2) - 30, "Difficulty: %s\tBombs Remaining: %d\tTime: %d:%d", "Easy", 10, (seconds / 60), (seconds % 60));
+		mvwprintw(hud, 3, (COLS / 2) - 30, "Difficulty: %s\tBombs Remaining: %d\tTime: %d:%d", "Easy", bombsRemaining, (seconds / 60), (seconds % 60));
 	}
 	pthread_mutex_unlock(&secondsMutex);
 
@@ -228,6 +227,7 @@ void NewGame()
 	InitializeGrid();
 	PlaceBombs();
 	CalculateAdjacentBombs();
+	bombsRemaining = numberOfBombs;
 
 	pthread_mutex_lock(&secondsMutex);
 	seconds = 0;

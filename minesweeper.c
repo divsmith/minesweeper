@@ -58,6 +58,7 @@ void *thread_result;
 bool timerStarted = false;
 pthread_mutex_t secondsMutex;
 pthread_mutex_t screenMutex;
+pthread_mutex_t wonLostMutex;
 WINDOW *hud, *board;
 int screenX;
 int screenY;
@@ -143,6 +144,9 @@ void PrintBoard()
 				if (grid[i][j].isMine)
 				{
 					mvwprintw(board, currentY, currentX, "%s", "X");
+					pthread_mutex_lock(&wonLostMutex);
+					gameLost = true;
+					pthread_mutex_unlock(&wonLostMutex);
 				}
 				else
 				{
@@ -277,6 +281,14 @@ void InitializeMutexes()
 		perror("Screen mutex initialization failed");
 		exit(EXIT_FAILURE);
 	}
+
+	res = pthread_mutex_init(&wonLostMutex, NULL);
+
+	if (res != 0)
+	{
+		perror("Won / Lost Mutex initialization failed");
+		exit(EXIT_FAILURE);
+	}
 }
 
 void Click(int i, int j)
@@ -372,20 +384,41 @@ void NewGame()
 
 			if (bombsCorrectlyFlagged == numberOfBombs)
 			{
+				pthread_mutex_lock(&wonLostMutex);
 				gameWon = true;
+				pthread_mutex_unlock(&wonLostMutex);
 			}
 		}
 
 		PrintBoard();
 	} while (key != 'q' && key != 'r' && !gameLost && !gameWon);
 
+	pthread_mutex_lock(&wonLostMutex);
 	if (gameWon)
 	{
 
 	}
 
+	if (gameLost)
+	{
+		usleep(750000);
+		wclear(hud);
+		wclear(board);
+
+		mvwprintw(board, 1, (COLS / 2) - 5, "%s", "Game Over");
+		mvwprintw(board, 3, (COLS / 2) - 19, "%s", "Press (r) to play again or (q) to quit");
+
+		wrefresh(hud);
+		wrefresh(board);
+
+		timeout(100000);
+		key = getch();
+	}
+	pthread_mutex_unlock(&wonLostMutex);
+
 	if (key == 'r')
 	{
+		timeout(100);
 		NewGame();
 	}
 }
@@ -400,7 +433,13 @@ void *TimerThread(void *arg)
 		seconds++;
 		pthread_mutex_unlock(&secondsMutex);
 
-		PrintHud();
+
+		pthread_mutex_lock(&wonLostMutex);
+		if (!gameWon && !gameLost)
+		{
+			PrintHud();
+		}
+		pthread_mutex_unlock(&wonLostMutex);
 		memset(readBuffer, '\0', sizeof(readBuffer));
 	}
 

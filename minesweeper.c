@@ -450,7 +450,7 @@ void FloodFill(int i, int j)
 	{
 		grid[i][j].isFloodFillMarked = true;
 
-		if (grid[i][j].adjacentMines == 0)
+		if (grid[i][j].adjacentMines == 0 && !grid[i][j].isMine)
 		{
 			if (!i == 0)
 			{

@@ -153,8 +153,6 @@ int main(int argc, char *argv[]) {
 			Usage();
 	}
 
-	difficulty = 0;
-
 	InitializeMutexes();
 
 	InitializeScreens();
@@ -369,7 +367,7 @@ void NewGame()
 	switch(difficulty)
 	{
 		case 0:
-			numberOfBombs = 1;
+			numberOfBombs = 5;
 			break;
 
 		case 1:
@@ -528,17 +526,23 @@ void NewGame()
 	if (gameLost)
 	{
 		usleep(750000);
-		wclear(hud);
-		wclear(board);
-
-		mvwprintw(board, 1, (COLS / 2) - 5, "%s", "Game Over");
-		mvwprintw(board, 3, (COLS / 2) - 19, "%s", "Press (r) to play again or (q) to quit");
-
-		wrefresh(hud);
-		wrefresh(board);
-
 		timeout(100000);
-		key = getch();
+
+		while (key != 'r' && key != 'q')
+		{
+			wclear(hud);
+			wclear(board);
+
+			mvwprintw(board, 1, (COLS / 2) - 5, "%s", "Game Over");
+			mvwprintw(board, 3, (COLS / 2) - 19, "%s", "Press (r) to play again or (q) to quit");
+
+			wrefresh(hud);
+			wrefresh(board);
+
+
+			key = getch();
+		}
+
 	}
 	pthread_mutex_unlock(&wonLostMutex);
 

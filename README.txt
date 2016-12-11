@@ -48,5 +48,8 @@ for the gameboard below.
 
 The File I/O requirement is fulfilled with the Sqlite database for holding the high scores. Several
 different queries and callbacks are used based on whether the high scores are being displayed,
-or determining whether a given score is high enough to be saved.
+or determining whether a given score is high enough to be saved. The database used is 'scores.db'.
+The program creates this database and it's schema automatically. I've included a secondary database,
+named 'demo.db' preloaded with the scores shown in my demo video for ease of testing. Just rename
+it from 'demo.db' to 'scores.db' and the application will automatically use it.
 

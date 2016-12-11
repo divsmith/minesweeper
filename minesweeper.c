@@ -503,7 +503,6 @@ void NewGame()
 				break;
 		}
 
-		usleep(750000);
 		wclear(hud);
 		wclear(board);
 
@@ -516,6 +515,14 @@ void NewGame()
 		strcpy(sql, "select count(score), id, min(score) from data");
 
 		res = sqlite3_exec(db, sql, SQLTest, 0, &zErrorMsg);
+		sleep(2);
+
+		wclear(board);
+		mvwprintw(board, 5, (COLS / 2) - 19, "%s", "Press (r) to play again or (q) to quit");
+		wrefresh(board);
+
+		timeout(100000);
+		key = getch();
 	}
 
 	if (gameLost)
@@ -544,21 +551,20 @@ void NewGame()
 
 static int ViewScoresSQL(void *notUsed, int argc, char **argv, char **azColName)
 {
-	if (atoi(argv[0]) > 0)
+	if (argv[0] != '\0')
 	{
-
-		printf("%s", argv[1]);
-
-		for (int j = 0; j < 10 - strlen(argv[1]); j++)
+		sqlResults = true;
+		for (int i = 0; i < argc; i += 2)
 		{
-			printf(" ");
-		}
+			printf("%s", argv[i]);
 
-		printf("%s\n", argv[2]);
-	}
-	else
-	{
-		printf("No scores yet. Play a game and add one!\n");
+			for (int j = 0; j < 10 - strlen(argv[i]); j++)
+			{
+				printf(" ");
+			}
+
+			printf("%s\n", argv[i + 1]);
+		}
 	}
 
 	return 0;
@@ -609,9 +615,8 @@ static int SQLTest(void *notUsed, int argc, char **argv, char **azColName)
 	}
 
 	wclear(board);
-	mvwprintw(board, 1, (COLS / 2) - 10, "%s", "Your score has been saved");
+	mvwprintw(board, 1, (COLS / 2) - 15, "%s", "Your score has been saved");
 	wrefresh(board);
-	sleep(1);
 
     return SQLITE_OK;
 }
@@ -697,7 +702,9 @@ void StartTimer()
 
 void ViewScores()
 {
-	strcpy(sql, "select count(score), name, score from data order by score desc;");
+	strcpy(sql, "select name, score from data order by score desc;");
+
+	sqlResults = false;
 
   	res = sqlite3_exec(db, sql, ViewScoresSQL, 0, &zErrorMsg);
 	if (res != SQLITE_OK)
@@ -705,6 +712,11 @@ void ViewScores()
 		fprintf(stderr, "SQL error2: %s\n", zErrorMsg);
 		sqlite3_free(zErrorMsg);
 		exit(1);
+	}
+
+	if (!sqlResults)
+	{
+		printf("No scores yet. Play a game and add one!\n");
 	}
 }
 

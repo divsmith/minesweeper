@@ -560,6 +560,8 @@ void PrintBoard()
 		currentX = initialX;
 	}
 
+	mvwprintw(board, 13, 7, "%s", "Restart-(r) \tQuit-(q)\tFlag-(f)\tClick-(enter)");
+
 	// Move the cursor back to where the user
 	// had it.
 	wmove(board, screenY, screenX);

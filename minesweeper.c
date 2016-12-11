@@ -99,9 +99,9 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Check if database exists.
-	if (access("scores", F_OK) != -1)
+	if (access("scores.db", F_OK) != -1)
 	{
-		res = sqlite3_open("scores", &db);
+		res = sqlite3_open("scores.db", &db);
 
 		if (res)
 		{
@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
 	else
 	{
 		// If not, initialize it.
-		res = sqlite3_open("scores", &db);
+		res = sqlite3_open("scores.db", &db);
 
 		if (res)
 		{
@@ -121,8 +121,8 @@ int main(int argc, char *argv[]) {
 			sqlite3_close(db);
 			exit(EXIT_FAILURE);
 		}
-		// Create the data schema
-		strcpy(sql, "create table data("  \
+		// Create the scores schema
+		strcpy(sql, "create table scores("  \
 						  "id integer primary key autoincrement unique,"
                           "name varchar(30)," \
                           "score int);");
@@ -362,7 +362,7 @@ void NewGame()
 		wrefresh(board);
 
 		// Check whether the score is high enough to be saved.
-		strcpy(sql, "select count(score), id, min(score) from data");
+		strcpy(sql, "select count(score), id, min(score) from scores");
 
 		res = sqlite3_exec(db, sql, SQLTest, 0, &zErrorMsg);
 		sleep(2);
@@ -734,11 +734,11 @@ static int SQLTest(void *notUsed, int argc, char **argv, char **azColName)
 	// And run the SQL query to add them to the database.
 	if (count >= 10)
 	{
-		sprintf(sql, "delete from data where id = %d; \ninsert into data(name, score) values(\"%s\", %d);", atoi(argv[1]), name, score);
+		sprintf(sql, "delete from scores where id = %d; \ninsert into data(name, score) values(\"%s\", %d);", atoi(argv[1]), name, score);
 	}
     else
     {
-    	sprintf(sql, "insert into data(name, score) values(\"%s\", %d);", name, score);
+    	sprintf(sql, "insert into scores(name, score) values(\"%s\", %d);", name, score);
     }
 
 	res = sqlite3_exec(db, sql, NULL, 0, &zErrorMsg);
@@ -761,7 +761,7 @@ static int SQLTest(void *notUsed, int argc, char **argv, char **azColName)
 
 void ViewScores()
 {
-	strcpy(sql, "select name, score from data order by score desc;");
+	strcpy(sql, "select name, score from scores order by score desc;");
 
 	sqlResults = false;
 

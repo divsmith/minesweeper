@@ -736,7 +736,7 @@ static int SQLTest(void *notUsed, int argc, char **argv, char **azColName)
 	// And run the SQL query to add them to the database.
 	if (count >= 10)
 	{
-		sprintf(sql, "delete from scores where id = %d; \ninsert into data(name, score) values(\"%s\", %d);", atoi(argv[1]), name, score);
+		sprintf(sql, "delete from scores where id = %d; \ninsert into scores(name, score) values(\"%s\", %d);", atoi(argv[1]), name, score);
 	}
     else
     {

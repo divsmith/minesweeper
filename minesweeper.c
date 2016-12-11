@@ -10,6 +10,7 @@
 #include <pthread.h>
 #include <curses.h>
 #include <ncurses.h>
+#include <sqlite3.h>
 
 void NewGame();
 void PlaceBombs();
@@ -29,6 +30,10 @@ void InitializeMutexes();
 void InitializeScreens();
 void PrintHud();
 void PrintBoard();
+static int SQLTest(void *NotUsed, int argc, char **argv, char **azColName);
+static int ViewScoresSQL(void *NotUsed, int argc, char **argv, char **azColName);
+
+#define NAME_LENGTH 256
 
 struct Tile {
 	bool isMine;
@@ -67,6 +72,12 @@ int boardY;
 int initialX;
 int initialY;
 int difficulty;
+sqlite3 *db;
+char sql[128];
+char *zErrorMsg = 0;
+int score;
+char name[NAME_LENGTH];
+bool sqlResults = false;
 
 int main(int argc, char *argv[]) {
 
@@ -79,6 +90,45 @@ int main(int argc, char *argv[]) {
 	{
 		Usage();
 	}
+
+
+	if (access("scores", F_OK) != -1)
+	{
+		res = sqlite3_open("scores", &db);
+
+		if (res)
+		{
+			fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+			sqlite3_close(db);
+			exit(EXIT_FAILURE);
+		}
+	}
+	else
+	{
+		res = sqlite3_open("scores", &db);
+
+		if (res)
+		{
+			fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+			sqlite3_close(db);
+			exit(EXIT_FAILURE);
+		}
+
+		strcpy(sql, "create table data("  \
+						  "id integer primary key autoincrement unique,"
+                          "name varchar(30)," \
+                          "score int);");
+
+        res = sqlite3_exec(db, sql, NULL, 0, &zErrorMsg);
+
+		if (res != SQLITE_OK)
+		{
+			fprintf(stderr, "SQL error3: %s\n", zErrorMsg);
+			sqlite3_free(zErrorMsg);
+			exit(EXIT_FAILURE);
+		}
+	}
+
 
 	switch(argv[1][1])
 	{
@@ -103,6 +153,8 @@ int main(int argc, char *argv[]) {
 			Usage();
 	}
 
+	difficulty = 0;
+
 	InitializeMutexes();
 
 	InitializeScreens();
@@ -124,6 +176,7 @@ int main(int argc, char *argv[]) {
 	echo();
 	nocbreak();
 	endwin();
+	sqlite3_close(db);
 	exit(0);
 }
 
@@ -316,7 +369,7 @@ void NewGame()
 	switch(difficulty)
 	{
 		case 0:
-			numberOfBombs = 5;
+			numberOfBombs = 1;
 			break;
 
 		case 1:
@@ -430,7 +483,6 @@ void NewGame()
 	if (gameWon)
 	{
 		int gameSeconds;
-		int score;
 
 		pthread_mutex_lock(&secondsMutex);
 		gameSeconds = seconds;
@@ -455,13 +507,15 @@ void NewGame()
 		wclear(hud);
 		wclear(board);
 
-		mvwprintw(board, 1, (COLS / 2) - 4, "%s", "You Won!");
-		mvwprintw(board, 3, (COLS / 2) - 9, "Your score was %d", score);
+		mvwprintw(board, 1, (COLS / 2) - 10, "%s", "You Won!");
+		mvwprintw(board, 3, (COLS / 2) - 10, "Your score was %d", score);
 
 		wrefresh(hud);
 		wrefresh(board);
 
-		sleep(2);
+		strcpy(sql, "select count(score), id, min(score) from data");
+
+		res = sqlite3_exec(db, sql, SQLTest, 0, &zErrorMsg);
 	}
 
 	if (gameLost)
@@ -486,6 +540,80 @@ void NewGame()
 		timeout(100);
 		NewGame();
 	}
+}
+
+static int ViewScoresSQL(void *notUsed, int argc, char **argv, char **azColName)
+{
+	if (atoi(argv[0]) > 0)
+	{
+
+		printf("%s", argv[1]);
+
+		for (int j = 0; j < 10 - strlen(argv[1]); j++)
+		{
+			printf(" ");
+		}
+
+		printf("%s\n", argv[2]);
+	}
+	else
+	{
+		printf("No scores yet. Play a game and add one!\n");
+	}
+
+	return 0;
+}
+
+static int SQLTest(void *notUsed, int argc, char **argv, char **azColName)
+{
+	int count = atoi(argv[0]);
+
+    if (count >= 10)
+    {
+    	int lowestScore = atoi(argv[2]);
+
+		if (score < lowestScore)
+		{
+			return 0;
+		}
+    }
+
+	nocbreak();
+	echo();
+
+	mvwprintw(board, 5, (COLS / 2) - 10, "%s", "Please enter name: ");
+
+	wrefresh(board);
+
+	wgetstr(board, name);
+
+	cbreak();
+	noecho();
+
+	if (count >= 10)
+	{
+		sprintf(sql, "delete from data where id = %d; \ninsert into data(name, score) values(\"%s\", %d);", atoi(argv[1]), name, score);
+	}
+    else
+    {
+    	sprintf(sql, "insert into data(name, score) values(\"%s\", %d);", name, score);
+    }
+
+	res = sqlite3_exec(db, sql, NULL, 0, &zErrorMsg);
+
+	if (res != SQLITE_OK)
+	{
+		fprintf(stderr, "SQL error1: %s\n", zErrorMsg);
+		sqlite3_free(zErrorMsg);
+		exit(1);
+	}
+
+	wclear(board);
+	mvwprintw(board, 1, (COLS / 2) - 10, "%s", "Your score has been saved");
+	wrefresh(board);
+	sleep(1);
+
+    return SQLITE_OK;
 }
 
 void *TimerThread(void *arg)
@@ -569,7 +697,15 @@ void StartTimer()
 
 void ViewScores()
 {
-	printf("View high scores here\n");
+	strcpy(sql, "select count(score), name, score from data order by score desc;");
+
+  	res = sqlite3_exec(db, sql, ViewScoresSQL, 0, &zErrorMsg);
+	if (res != SQLITE_OK)
+	{
+		fprintf(stderr, "SQL error2: %s\n", zErrorMsg);
+		sqlite3_free(zErrorMsg);
+		exit(1);
+	}
 }
 
 void Usage()

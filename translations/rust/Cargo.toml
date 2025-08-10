@@ -1,0 +1,10 @@
+[package]
+name = "minesweeper"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ncurses = "5.101.0"
+sqlite = "0.30.0"
+libc = "0.2"
+oorandom = "11.1.3"

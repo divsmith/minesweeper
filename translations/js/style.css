@@ -1,0 +1,118 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+}
+
+.game-container {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #eee;
+    border-radius: 4px;
+}
+
+.hud-item {
+    display: flex;
+    align-items: center;
+    margin: 0 10px;
+}
+
+#timer, #bomb-count {
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+#difficulty {
+    padding: 5px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+#restart {
+    padding: 8px 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#restart:hover {
+    background-color: #45a049;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(10, 30px);
+    grid-gap: 2px;
+}
+
+.tile {
+    width: 30px;
+    height: 30px;
+    background-color: #ddd;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    cursor: pointer;
+    border: 1px solid #999;
+    border-radius: 2px;
+}
+
+.tile.revealed {
+    background-color: #f5f5f5;
+    cursor: default;
+}
+
+.tile.flagged::before {
+    content: "🚩";
+}
+
+.tile.mine {
+    background-color: #ff9999;
+}
+
+.tile.mine::before {
+    content: "💣";
+}
+
+.tile.mine.revealed {
+    background-color: #ff6666;
+}
+
+/* Number colors */
+.tile.revealed[data-value="1"] { color: blue; }
+.tile.revealed[data-value="2"] { color: green; }
+.tile.revealed[data-value="3"] { color: red; }
+.tile.revealed[data-value="4"] { color: darkblue; }
+.tile.revealed[data-value="5"] { color: darkred; }
+.tile.revealed[data-value="6"] { color: teal; }
+.tile.revealed[data-value="7"] { color: black; }
+.tile.revealed[data-value="8"] { color: gray; }
+
+/* Responsive design */
+@media (max-width: 400px) {
+    .grid {
+        grid-template-columns: repeat(10, 25px);
+    }
+    .tile {
+        width: 25px;
+        height: 25px;
+        font-size: 12px;
+    }
+}

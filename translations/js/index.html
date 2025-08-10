@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minesweeper</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="hud">
+            <div class="hud-item">
+                <span>Time: </span>
+                <span id="timer">0</span>
+            </div>
+            <div class="hud-item">
+                <span>Bombs: </span>
+                <span id="bomb-count">10</span>
+            </div>
+            <div class="hud-item">
+                <select id="difficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </div>
+            <button id="restart">Restart</button>
+        </div>
+        
+        <div class="grid" id="game-grid"></div>
+    </div>
+
+    <script src="minesweeper.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const game = new Game(10, 10, 10); // 10x10 grid with 10 mines
+            const grid = document.getElementById('game-grid');
+            
+            // Create grid tiles
+            for (let row = 0; row < game.rows; row++) {
+                for (let col = 0; col < game.cols; col++) {
+                    const tile = document.createElement('div');
+                    tile.className = 'tile';
+                    tile.dataset.row = row;
+                    tile.dataset.col = col;
+                    
+                    tile.addEventListener('click', () => game.handleLeftClick(row, col));
+                    tile.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        game.handleRightClick(row, col);
+                    });
+                    
+                    grid.appendChild(tile);
+                }
+            }
+            
+            // Event listeners
+            document.getElementById('restart').addEventListener('click', () => game.restart());
+            document.getElementById('difficulty').addEventListener('change', (e) => {
+                game.setDifficulty(e.target.value);
+            });
+            
+            // Start game
+            game.start();
+        });
+    </script>
+</body>
+</html>
